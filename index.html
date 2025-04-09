@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mini asiron Game</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      background: #f0f0f0;
+      text-align: center;
+      font-family: sans-serif;
+    }
+    #gameCanvas {
+      background: #fff;
+      border: 1px solid #ccc;
+      width: 95vw;
+      height: 50vh;
+      max-width: 800px;
+    }
+  </style>
+</head>
+<body>
+  <canvas id="gameCanvas" width="800" height="200" style="margin-top: 100px;"></canvas><br>
+  <img id="dinoImage" src="asiron.png" style="display:none;">
+  <img id="cactusImage" src="cactus.png" style="display:none;">
+  <img id="birdImage" src="bird.png" style="display:none;">
+  <br>
+  <p style="text-align: center;">スペースキー｜start / jump｜</p>
+  <br>
+  <img id="" src="qrcode.png" style="height:100px; display: block; margin: auto;">
+  
+  <script src="game.js"></script>
+</body>
+</html>
