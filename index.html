@@ -4,22 +4,33 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Mini asiron Game</title>
-  <style>
-    body {
-      margin: 0;
-      padding: 0;
-      background: #f0f0f0;
-      text-align: center;
-      font-family: sans-serif;
-    }
-    #gameCanvas {
-      background: #fff;
-      border: 1px solid #ccc;
-      width: 95vw;
-      height: 50vh;
-      max-width: 800px;
-    }
-  </style>
+<style>
+  html, body {
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+    background: #f7f7f7;
+  }
+
+  #gameCanvas {
+    display: block;
+    margin: 0 auto;
+    background: #f7f7f7;
+  }
+
+  #rotateMessage {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100vw; height: 100vh;
+    background: #fff;
+    color: #333;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10;
+  }
+</style>
+
 </head>
 <body>
   <canvas id="gameCanvas" width="800" height="200" style="margin-top: 100px;"></canvas><br>
@@ -37,6 +48,14 @@
   <br>
   <p style="text-align: center;">本家→　chrome://dino　（アドレスバーに入力）</p>
   <br>
+
+<div id="rotateMessage" style="display: none;">
+  <p style="text-align:center; font-size: 20px; padding: 1em;">
+    横向きにしてプレイしてください
+  </p>
+</div>
+
+
   
   <script src="game.js"></script>
 </body>
