@@ -1,11 +1,26 @@
 const canvas = document.getElementById("gameCanvas");
 const ctx = canvas.getContext("2d");
-const dinoImg = document.getElementById("dinoImage");
+
+const dinoRun1 = document.getElementById("dinoRun1");
+const dinoRun2 = document.getElementById("dinoRun2");
 const cactusImg = document.getElementById("cactusImage");
 const birdImg = document.getElementById("birdImage");
+
 let bgX = 0;
 
-let dino = { x: 50, y: 150, width: 48, height: 48, vy: 0, gravity: 2, jumpPower: -25, isJumping: false };
+let dino = {
+  x: 50,
+  y: 150,
+  width: 48,
+  height: 48,
+  vy: 0,
+  gravity: 2,
+  jumpPower: -25,
+  isJumping: false,
+  frame: 0,
+  frameCount: 0
+};
+
 let cactus = { x: 800, y: 160, width: 20, height: 40 };
 let bird = { x: 1200, y: 100, width: 40, height: 30 };
 let score = 0;
@@ -16,32 +31,48 @@ let cactusCooldown = 0;
 
 document.addEventListener("keydown", (e) => {
   if (e.code === "Space") {
-    if (!gameStarted) {
-      resetGame();
-      gameStarted = true;
-      loop();
-    } else if (gameOver) {
-      resetGame();
-      loop();
-    } else if (!dino.isJumping) {
-      dino.vy = dino.jumpPower;
-      dino.isJumping = true;
-    }
+    handleJump();
   }
 });
 
+canvas.addEventListener("touchstart", handleJump);
+canvas.addEventListener("touchend", () => {}); // 防止連打処理などに応用可能
+
+function handleJump() {
+  if (!gameStarted) {
+    resetGame();
+    loop();
+  } else if (gameOver) {
+    resetGame();
+    loop();
+  } else if (!dino.isJumping) {
+    dino.vy = dino.jumpPower;
+    dino.isJumping = true;
+  }
+}
+
 function resetGame() {
-  gameStarted = true;
   gameOver = false;
   cactus.x = 800;
   bird.x = 1200;
   score = 0;
   speed = 8;
   dino.y = 150;
+  dino.vy = 0;
+  dino.isJumping = false;
+  dino.frame = 0;
+  dino.frameCount = 0;
   cactusCooldown = Math.random() * 150 + 100;
+  gameStarted = true;
 }
 
 function update() {
+  // 背景スクロール
+  bgX -= speed / 2;
+  if (bgX <= -canvas.width) {
+    bgX = 0;
+  }
+
   // ジャンプ処理
   dino.y += dino.vy;
   dino.vy += dino.gravity;
@@ -49,6 +80,14 @@ function update() {
     dino.y = 150;
     dino.vy = 0;
     dino.isJumping = false;
+  }
+
+  // 恐竜走行アニメーション
+  if (!dino.isJumping) {
+    dino.frameCount++;
+    if (dino.frameCount % 8 === 0) {
+      dino.frame = (dino.frame + 1) % 2;
+    }
   }
 
   // サボテン
@@ -65,6 +104,7 @@ function update() {
   bird.x -= speed + 1;
   if (bird.x < -bird.width) {
     bird.x = 1000 + Math.random() * 300;
+    bird.y = 80 + Math.random() * 60;
   }
 
   // 当たり判定（サボテン）
@@ -97,6 +137,9 @@ function update() {
 function draw() {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
 
+  // 背景色
+  ctx.fillStyle = "#f7f7f7";
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
 
   // 地面
   ctx.strokeStyle = "#888";
@@ -105,8 +148,9 @@ function draw() {
   ctx.lineTo(800, 190);
   ctx.stroke();
 
-  // 恐竜
-  ctx.drawImage(dinoImg, dino.x, dino.y, dino.width, dino.height);
+  // 恐竜（走行アニメーション）
+  const currentDinoImage = dino.frame === 0 ? dinoRun1 : dinoRun2;
+  ctx.drawImage(currentDinoImage, dino.x, dino.y, dino.width, dino.height);
 
   // サボテン
   ctx.drawImage(cactusImg, cactus.x, cactus.y, cactus.width, cactus.height);
@@ -141,21 +185,7 @@ function loop() {
   }
 }
 
-// スマホ用のタップ操作に対応
-canvas.addEventListener("touchstart", () => {
-  if (!gameStarted) {
-    resetGame();
-    loop();
-  } else if (gameOver) {
-    resetGame();
-    loop();
-  } else if (!dino.isJumping) {
-    dino.vy = dino.jumpPower;
-    dino.isJumping = true;
-  }
-});
-
-// リサイズ時にcanvasサイズを調整（見た目だけ）
+// リサイズ対応
 function resizeCanvas() {
   const ratio = 800 / 200;
   const w = canvas.clientWidth;
