@@ -87,7 +87,7 @@ function update() {
   // 恐竜走行アニメーション
   if (!dino.isJumping) {
     dino.frameCount++;
-    if (dino.frameCount % 8 === 0) {
+    if (dino.frameCount % 4 === 0) {
       dino.frame = (dino.frame + 1) % 4;
     }
   }
