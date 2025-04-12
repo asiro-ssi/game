@@ -3,6 +3,8 @@ const ctx = canvas.getContext("2d");
 
 const dinoRun1 = document.getElementById("dinoRun1");
 const dinoRun2 = document.getElementById("dinoRun2");
+const dinoRun3 = document.getElementById("dinoRun3");
+const dinoRun4 = document.getElementById("dinoRun4");
 const cactusImg = document.getElementById("cactusImage");
 const birdImg = document.getElementById("birdImage");
 
@@ -86,7 +88,7 @@ function update() {
   if (!dino.isJumping) {
     dino.frameCount++;
     if (dino.frameCount % 8 === 0) {
-      dino.frame = (dino.frame + 1) % 2;
+      dino.frame = (dino.frame + 1) % 4;
     }
   }
 
@@ -149,7 +151,8 @@ function draw() {
   ctx.stroke();
 
   // 恐竜（走行アニメーション）
-  const currentDinoImage = dino.frame === 0 ? dinoRun1 : dinoRun2;
+  const dinoImages = [dinoRun1, dinoRun2, dinoRun3, dinoRun4];
+  const currentDinoImage = dinoImages[dino.frame];
   ctx.drawImage(currentDinoImage, dino.x, dino.y, dino.width, dino.height);
 
   // サボテン
