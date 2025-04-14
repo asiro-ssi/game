@@ -151,7 +151,7 @@ function setFinalSlots(outcome) {
     for (let i = 1; i <= 3; i++) {
       document.getElementById(`slot${i}`).src = "seven.jpg";
     }
-    result.textContent = "🎉 sevenで大当たり！ +50コイン";
+    result.textContent = "大当たり！ +50";
     coins += 50;
     triggerWinEffect(true);
 
@@ -161,7 +161,7 @@ function setFinalSlots(outcome) {
     for (let i = 1; i <= 3; i++) {
       document.getElementById(`slot${i}`).src = chosen;
     }
-    result.textContent = "✨ 小当たり！ +15コイン";
+    result.textContent = "当たり！ +15";
     coins += 15;
     triggerWinEffect(false);
 
@@ -176,7 +176,7 @@ function setFinalSlots(outcome) {
       used.push(img);
       document.getElementById(`slot${i}`).src = img;
     }
-    result.textContent = "😢 はずれ… -3コイン";
+    result.textContent = "はずれ… -3";
   }
 
   updateCoinsDisplay();
