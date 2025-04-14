@@ -115,9 +115,9 @@ function spin() {
   // 抽選（確率調整）
   const rand = Math.random();
   let outcome;
-  if (rand < 0.02) {
+  if (rand < 0.01) {
     outcome = "big";     // 1% 大当たり
-  } else if (rand < 0.2) {
+  } else if (rand < 0.11) {
     outcome = "small";   // 10% 小当たり
   } else {
     outcome = "miss";    // 89% ハズレ
