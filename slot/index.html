@@ -28,31 +28,31 @@
   </style>
 </head>
 <body>
-  <h1> asiron slot! 🎰</h1>
+  <h1>asiron slot!</h1>
   <div>
     <span class="slot" id="slot1">❔</span>
     <span class="slot" id="slot2">❔</span>
     <span class="slot" id="slot3">❔</span>
   </div>
-  <button id="spinBtn" onclick="spin()">回す！（1コイン）</button>
-  <div class="result" id="result">Start！</div>
-  <div class="coins" id="coins">コイン: 10</div>
+  <button id="spinBtn" onclick="spin()">Spin（３コイン）</button>
+  <div class="result" id="result">Start</div>
+  <div class="coins" id="coins">coin: 50</div>
 
   <script>
     const symbols = ["🍒", "🍋", "🍇", "🍉", "🍎", "7️⃣"];
-    let coins = 10;
+    let coins = 50;
 
     function updateCoinsDisplay() {
       document.getElementById("coins").textContent = `コイン: ${coins}`;
     }
 
     function spin() {
-      if (coins <= 0) {
-        document.getElementById("result").textContent = "💀 コインがありません。ゲームオーバー。";
+      if (coins < 3) {
+        document.getElementById("result").textContent = "💀 コインが足りません。ゲームオーバー。";
         return;
       }
 
-      coins--; // 1回ごとにコイン消費
+      coins -= 3; // 1回ごとに3コイン消費
       updateCoinsDisplay();
       document.getElementById("result").textContent = "回転中…";
 
@@ -81,18 +81,19 @@
       const result = document.getElementById("result");
 
       if (slot1 === slot2 && slot2 === slot3) {
-        result.textContent = "🎉 大当たり！ +5コイン";
-        coins += 5;
+        result.textContent = "🎉 大当たり！ +50コイン";
+        coins += 50;
       } else if (slot1 === slot2 || slot2 === slot3 || slot1 === slot3) {
-        result.textContent = "✨ 小当たり！ +2コイン";
-        coins += 2;
+        result.textContent = "✨ 小当たり！ +15コイン";
+        coins += 15;
       } else {
-        result.textContent = "😢 はずれ… -1コイン";
+        result.textContent = "😢 はずれ… -3コイン";
       }
+
       updateCoinsDisplay();
 
-      if (coins <= 0) {
-        result.textContent = "💀 コインがなくなりました。ゲームオーバー。";
+      if (coins < 3) {
+        result.textContent += "\n💀 コインが足りません。ゲームオーバー。";
       }
     }
   </script>
