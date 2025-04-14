@@ -186,16 +186,6 @@ function setFinalSlots(outcome) {
   }
 }
 
-function triggerWinEffect(isBig) {
-  const result = document.getElementById("result");
-  result.style.color = isBig ? "#e74c3c" : "#f1c40f";
-  result.style.fontSize = "1.4em";
-  result.style.fontWeight = "bold";
-  setTimeout(() => {
-    result.style.fontSize = "1em";
-    result.style.fontWeight = "normal";
-  }, 1200);
-}
 
   </script>
 </body>
