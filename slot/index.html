@@ -130,30 +130,32 @@
       }, 80);
     }
 
-    function showResult() {
-      const slot1 = document.getElementById("slot1").src;
-      const slot2 = document.getElementById("slot2").src;
-      const slot3 = document.getElementById("slot3").src;
-      const result = document.getElementById("result");
+function showResult() {
+  const slot1 = document.getElementById("slot1").src;
+  const slot2 = document.getElementById("slot2").src;
+  const slot3 = document.getElementById("slot3").src;
+  const result = document.getElementById("result");
 
-      if (slot1 === slot2 && slot2 === slot3) {
-        result.textContent = "🎉 大当たり！ +50コイン";
-        coins += 50;
-        triggerWinEffect(true);
-      } else if (slot1 === slot2 || slot2 === slot3 || slot1 === slot3) {
-        result.textContent = "✨ 小当たり！ +15コイン";
-        coins += 15;
-        triggerWinEffect(false);
-      } else {
-        result.textContent = "😢 はずれ… -3コイン";
-      }
+  const isTriple = slot1 === slot2 && slot2 === slot3;
 
-      updateCoinsDisplay();
+  if (isTriple && slot1.includes("asiron.jpg")) {
+    result.textContent = "🎉 sevenで大当たり！ +50コイン";
+    coins += 50;
+    triggerWinEffect(true);
+  } else if (isTriple) {
+    result.textContent = "✨ 小当たり！ +15コイン";
+    coins += 15;
+    triggerWinEffect(false);
+  } else {
+    result.textContent = "😢 はずれ… -3コイン";
+  }
 
-      if (coins < 3) {
-        result.textContent += "\n💀 コインが足りません。ゲームオーバー。";
-      }
-    }
+  updateCoinsDisplay();
+
+  if (coins < 3) {
+    result.textContent += "\n💀 コインが足りません。ゲームオーバー。";
+  }
+}
 
     function triggerWinEffect(isBig) {
       const body = document.body;
