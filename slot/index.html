@@ -185,9 +185,9 @@ function setFinalSlots(outcome) {
 
 function triggerWinEffect(isBig) {
   const result = document.getElementById("result");
-  result.style.color = isBig ? "#e74c3c" : "#f1c40f";
-  result.style.fontSize = "1.4em";
-  result.style.fontWeight = "bold";
+  result.style.color = isBig ? "#000" : "#000";
+  result.style.fontSize = "1.0em";
+  result.style.fontWeight = "normal";
   setTimeout(() => {
     result.style.color = "#000";
     result.style.fontSize = "1em";
