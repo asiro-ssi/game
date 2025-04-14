@@ -25,7 +25,47 @@
       font-size: 16px;
       margin-top: 20px;
     }
-  </style>
+  .slot {
+    font-size: 60px;
+    margin: 20px;
+    display: inline-block;
+    width: 80px;
+    transition: transform 0.1s, opacity 0.1s;
+  }
+
+  .spin-animation {
+    animation: spinFade 0.1s ease-in-out;
+  }
+
+  @keyframes spinFade {
+    0%   { transform: scale(1.2); opacity: 0.2; }
+    100% { transform: scale(1);   opacity: 1; }
+  }
+
+  .flash {
+    animation: flashGlow 0.6s ease-in-out;
+  }
+
+  @keyframes flashGlow {
+    0%   { background-color: #fffacd; }
+    50%  { background-color: #ffff99; }
+    100% { background-color: transparent; }
+  }
+
+  .shake {
+    animation: shake 0.5s;
+  }
+
+  @keyframes shake {
+    0% { transform: translate(0px, 0px); }
+    20% { transform: translate(-5px, 0px); }
+    40% { transform: translate(5px, 0px); }
+    60% { transform: translate(-5px, 0px); }
+    80% { transform: translate(5px, 0px); }
+    100% { transform: translate(0px, 0px); }
+  }
+</style>
+
 </head>
 <body>
   <h1>asiron slot!</h1>
@@ -96,6 +136,74 @@
         result.textContent += "\n💀 コインが足りません。ゲームオーバー。";
       }
     }
+  </script>
+  <script>
+    function spin() {
+  if (coins < 3) {
+    document.getElementById("result").textContent = "💀 コインが足りません。ゲームオーバー。";
+    return;
+  }
+
+  coins -= 3;
+  updateCoinsDisplay();
+  document.getElementById("result").textContent = "回転中…";
+
+  const spinBtn = document.getElementById("spinBtn");
+  spinBtn.disabled = true;
+
+  let counter = 0;
+  const maxSpins = 10;
+  const interval = setInterval(() => {
+    for (let i = 1; i <= 3; i++) {
+      const slot = document.getElementById(`slot${i}`);
+      slot.textContent = symbols[Math.floor(Math.random() * symbols.length)];
+      slot.classList.add("spin-animation");
+      setTimeout(() => slot.classList.remove("spin-animation"), 100);
+    }
+    counter++;
+    if (counter >= maxSpins) {
+      clearInterval(interval);
+      showResult();
+      spinBtn.disabled = false;
+    }
+  }, 80);
+}
+
+function showResult() {
+  const slot1 = document.getElementById("slot1").textContent;
+  const slot2 = document.getElementById("slot2").textContent;
+  const slot3 = document.getElementById("slot3").textContent;
+  const result = document.getElementById("result");
+
+  if (slot1 === slot2 && slot2 === slot3) {
+    result.textContent = "🎉 大当たり！ +50コイン";
+    coins += 50;
+    triggerWinEffect(true);
+  } else if (slot1 === slot2 || slot2 === slot3 || slot1 === slot3) {
+    result.textContent = "✨ 小当たり！ +15コイン";
+    coins += 15;
+    triggerWinEffect(false);
+  } else {
+    result.textContent = "😢 はずれ… -3コイン";
+  }
+
+  updateCoinsDisplay();
+
+  if (coins < 3) {
+    result.textContent += "\n💀 コインが足りません。ゲームオーバー。";
+  }
+}
+
+function triggerWinEffect(isBig) {
+  const body = document.body;
+  body.classList.add(isBig ? "shake" : "flash");
+
+  setTimeout(() => {
+    body.classList.remove("shake");
+    body.classList.remove("flash");
+  }, 600);
+}
+
   </script>
 </body>
 </html>
