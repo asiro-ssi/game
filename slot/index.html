@@ -95,15 +95,15 @@ const symbols = [
 let coins = 50;
 document.getElementById("coins").textContent = `コイン: ${coins}`;
 
-// 表示更新
+document.getElementById("spinBtn").addEventListener("click", spin);
+
 function updateCoinsDisplay() {
   document.getElementById("coins").textContent = `コイン: ${coins}`;
 }
 
-// メイン処理
 function spin() {
   if (coins < 3) {
-    document.getElementById("result").textContent = "💀 コインが足りません。ゲームオーバー。";
+    document.getElementById("result").textContent = "コインが足りません";
     return;
   }
 
@@ -112,18 +112,17 @@ function spin() {
   document.getElementById("result").textContent = "回転中…";
   document.getElementById("spinBtn").disabled = true;
 
-  // 抽選（確率調整）
   const rand = Math.random();
   let outcome;
-  if (rand < 0.01) {
-    outcome = "big";     // 1% 大当たり
-  } else if (rand < 0.11) {
-    outcome = "small";   // 10% 小当たり
+
+  if (rand < 0.02) {
+    outcome = "big";
+  } else if (rand < 0.15) {
+    outcome = "small";
   } else {
-    outcome = "miss";    // 89% ハズレ
+    outcome = "miss";
   }
 
-  // 回転アニメーション
   let counter = 0;
   const maxSpins = 10;
   const interval = setInterval(() => {
@@ -137,19 +136,12 @@ function spin() {
     counter++;
     if (counter >= maxSpins) {
       clearInterval(interval);
-      try {
-        setFinalSlots(outcome);
-      } catch (e) {
-        console.error("処理中にエラー:", e);
-        document.getElementById("result").textContent = "⚠️ エラーが発生しました";
-      } finally {
-        document.getElementById("spinBtn").disabled = false;
-      }
+      setFinalSlots(outcome);
+      document.getElementById("spinBtn").disabled = false;
     }
   }, 80);
 }
 
-// スロット結果セット
 function setFinalSlots(outcome) {
   const result = document.getElementById("result");
 
@@ -172,7 +164,6 @@ function setFinalSlots(outcome) {
     triggerWinEffect(false);
 
   } else {
-    // ハズレ（できるだけバラバラな図柄に）
     const used = [];
     for (let i = 1; i <= 3; i++) {
       let img;
@@ -192,10 +183,19 @@ function setFinalSlots(outcome) {
   }
 }
 
-
-
-document.getElementById("spinBtn").addEventListener("click", spin);
+function triggerWinEffect(isBig) {
+  const result = document.getElementById("result");
+  result.style.color = isBig ? "#e74c3c" : "#f1c40f";
+  result.style.fontSize = "1.4em";
+  result.style.fontWeight = "bold";
+  setTimeout(() => {
+    result.style.color = "#000";
+    result.style.fontSize = "1em";
+    result.style.fontWeight = "normal";
+  }, 1200);
+}
 </script>
+
 
 </body>
 </html>
