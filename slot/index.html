@@ -85,68 +85,97 @@
   <div id="result">start</div>
 
   <script>
-    let coins = 50;
+const symbols = [
+  "001.png",
+  "002.png",
+  "003.png",
+  "seven.jpg"
+];
 
-    const symbols = [
-      "001.png",
-      "002.png",
-      "003.png",
-      "asiron.jpg"
-    ];
+let coins = 50;
+document.getElementById("coins").textContent = `コイン: ${coins}`;
 
-    function updateCoinsDisplay() {
-      document.getElementById("coins").textContent = `コイン：${coins}`;
+document.getElementById("spinBtn").addEventListener("click", spin);
+
+function updateCoinsDisplay() {
+  document.getElementById("coins").textContent = `コイン: ${coins}`;
+}
+
+function spin() {
+  if (coins < 3) {
+    document.getElementById("result").textContent = "💀 コインが足りません。ゲームオーバー。";
+    return;
+  }
+
+  coins -= 3;
+  updateCoinsDisplay();
+  document.getElementById("result").textContent = "回転中…";
+  document.getElementById("spinBtn").disabled = true;
+
+  // 抽選
+  const rand = Math.random();
+  let outcome;
+
+  if (rand < 0.01) {
+    outcome = "big";      // 1%
+  } else if (rand < 0.11) {
+    outcome = "small";    // 10%
+  } else {
+    outcome = "miss";     // 89%
+  }
+
+  // アニメーション演出
+  let counter = 0;
+  const maxSpins = 10;
+  const interval = setInterval(() => {
+    for (let i = 1; i <= 3; i++) {
+      const slot = document.getElementById(`slot${i}`);
+      const randomImg = symbols[Math.floor(Math.random() * symbols.length)];
+      slot.src = randomImg;
+      slot.classList.add("spin-animation");
+      setTimeout(() => slot.classList.remove("spin-animation"), 100);
     }
-
-    function spin() {
-      if (coins < 3) {
-        document.getElementById("result").textContent = "💀 コインが足りません。ゲームオーバー。";
-        return;
-      }
-
-      coins -= 3;
-      updateCoinsDisplay();
-      document.getElementById("result").textContent = "回転中…";
-
-      const spinBtn = document.getElementById("spinBtn");
-      spinBtn.disabled = true;
-
-      let counter = 0;
-      const maxSpins = 10;
-      const interval = setInterval(() => {
-        for (let i = 1; i <= 3; i++) {
-          const slot = document.getElementById(`slot${i}`);
-          const randomImg = symbols[Math.floor(Math.random() * symbols.length)];
-          slot.src = randomImg;
-          slot.classList.add("spin-animation");
-          setTimeout(() => slot.classList.remove("spin-animation"), 100);
-        }
-        counter++;
-        if (counter >= maxSpins) {
-          clearInterval(interval);
-          showResult();
-          spinBtn.disabled = false;
-        }
-      }, 80);
+    counter++;
+    if (counter >= maxSpins) {
+      clearInterval(interval);
+      setFinalSlots(outcome);
+      document.getElementById("spinBtn").disabled = false;
     }
+  }, 80);
+}
 
-function showResult() {
-  const slot1 = document.getElementById("slot1").src;
-  const slot2 = document.getElementById("slot2").src;
-  const slot3 = document.getElementById("slot3").src;
+function setFinalSlots(outcome) {
   const result = document.getElementById("result");
 
-  const isTriple = slot1 === slot2 && slot2 === slot3;
-
-  if (isTriple && slot1.includes("asiron.jpg")) {
+  if (outcome === "big") {
+    for (let i = 1; i <= 3; i++) {
+      document.getElementById(`slot${i}`).src = "seven.jpg";
+    }
     result.textContent = "🎉 sevenで大当たり！ +50コイン";
     coins += 50;
     triggerWinEffect(true);
-  } else if (isTriple) {
+
+  } else if (outcome === "small") {
+    const nonSeven = symbols.filter(s => !s.includes("seven"));
+    const chosen = nonSeven[Math.floor(Math.random() * nonSeven.length)];
+    for (let i = 1; i <= 3; i++) {
+      document.getElementById(`slot${i}`).src = chosen;
+    }
     result.textContent = "✨ 小当たり！ +15コイン";
     coins += 15;
     triggerWinEffect(false);
+
   } else {
+    // ハズレ（3つバラバラに）
+    const used = [];
+    for (let i = 1; i <= 3; i++) {
+      let img;
+      do {
+        img = symbols[Math.floor(Math.random() * symbols.length)];
+      } while (used.includes(img) && used.length < symbols.length - 1);
+      used.push(img);
+      document.getElementById(`slot${i}`).src = img;
+    }
     result.textContent = "😢 はずれ… -3コイン";
   }
 
@@ -157,14 +186,18 @@ function showResult() {
   }
 }
 
-    function triggerWinEffect(isBig) {
-      const body = document.body;
-      body.classList.add(isBig ? "shake" : "flash");
-      setTimeout(() => {
-        body.classList.remove("shake");
-        body.classList.remove("flash");
-      }, 600);
-    }
+function triggerWinEffect(isBig) {
+  const result = document.getElementById("result");
+  result.style.color = isBig ? "#e74c3c" : "#f1c40f";
+  result.style.fontSize = "1.4em";
+  result.style.fontWeight = "bold";
+  setTimeout(() => {
+    result.style.color = "#fff";
+    result.style.fontSize = "1em";
+    result.style.fontWeight = "normal";
+  }, 1200);
+}
+
   </script>
 </body>
 </html>
