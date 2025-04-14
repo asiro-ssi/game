@@ -115,9 +115,9 @@ function spin() {
   // 抽選（確率調整）
   const rand = Math.random();
   let outcome;
-  if (rand < 0.01) {
+  if (rand < 0.02) {
     outcome = "big";     // 1% 大当たり
-  } else if (rand < 0.11) {
+  } else if (rand < 0.2) {
     outcome = "small";   // 10% 小当たり
   } else {
     outcome = "miss";    // 89% ハズレ
@@ -157,7 +157,7 @@ function setFinalSlots(outcome) {
     for (let i = 1; i <= 3; i++) {
       document.getElementById(`slot${i}`).src = "seven.jpg";
     }
-    result.textContent = "🎉 sevenで大当たり！ +50コイン";
+    result.textContent = "大当たり！ +50";
     coins += 50;
     triggerWinEffect(true);
 
@@ -167,7 +167,7 @@ function setFinalSlots(outcome) {
     for (let i = 1; i <= 3; i++) {
       document.getElementById(`slot${i}`).src = chosen;
     }
-    result.textContent = "✨ 小当たり！ +15コイン";
+    result.textContent = "当たり！ +15";
     coins += 15;
     triggerWinEffect(false);
 
@@ -182,30 +182,17 @@ function setFinalSlots(outcome) {
       used.push(img);
       document.getElementById(`slot${i}`).src = img;
     }
-    result.textContent = "😢 はずれ… -3コイン";
+    result.textContent = "はずれ… -3";
   }
 
   updateCoinsDisplay();
 
   if (coins < 3) {
-    result.textContent += "\n💀 コインが足りません。ゲームオーバー。";
+    result.textContent += "\nコインが足りません";
   }
 }
 
-// 演出エフェクト
-function triggerWinEffect(isBig) {
-  const result = document.getElementById("result");
-  result.style.color = isBig ? "#e74c3c" : "#f1c40f";
-  result.style.fontSize = "1.4em";
-  result.style.fontWeight = "bold";
-  result.classList.add("flash");
-  setTimeout(() => {
-    result.style.color = "#333";
-    result.style.fontSize = "1em";
-    result.style.fontWeight = "normal";
-    result.classList.remove("flash");
-  }, 1200);
-}
+
 
 document.getElementById("spinBtn").addEventListener("click", spin);
 </script>
