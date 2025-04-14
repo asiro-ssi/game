@@ -84,7 +84,7 @@
   <button id="spinBtn">spin</button>
   <div id="result">start</div>
 
-  <script>
+<script>
 const symbols = [
   "001.png",
   "002.png",
@@ -95,12 +95,12 @@ const symbols = [
 let coins = 50;
 document.getElementById("coins").textContent = `コイン: ${coins}`;
 
-document.getElementById("spinBtn").addEventListener("click", spin);
-
+// 表示更新
 function updateCoinsDisplay() {
   document.getElementById("coins").textContent = `コイン: ${coins}`;
 }
 
+// メイン処理
 function spin() {
   if (coins < 3) {
     document.getElementById("result").textContent = "💀 コインが足りません。ゲームオーバー。";
@@ -112,19 +112,18 @@ function spin() {
   document.getElementById("result").textContent = "回転中…";
   document.getElementById("spinBtn").disabled = true;
 
-  // 抽選
+  // 抽選（確率調整）
   const rand = Math.random();
   let outcome;
-
   if (rand < 0.01) {
-    outcome = "big";      // 1%
+    outcome = "big";     // 1% 大当たり
   } else if (rand < 0.11) {
-    outcome = "small";    // 10%
+    outcome = "small";   // 10% 小当たり
   } else {
-    outcome = "miss";     // 89%
+    outcome = "miss";    // 89% ハズレ
   }
 
-  // アニメーション演出
+  // 回転アニメーション
   let counter = 0;
   const maxSpins = 10;
   const interval = setInterval(() => {
@@ -138,12 +137,19 @@ function spin() {
     counter++;
     if (counter >= maxSpins) {
       clearInterval(interval);
-      setFinalSlots(outcome);
-      document.getElementById("spinBtn").disabled = false;
+      try {
+        setFinalSlots(outcome);
+      } catch (e) {
+        console.error("処理中にエラー:", e);
+        document.getElementById("result").textContent = "⚠️ エラーが発生しました";
+      } finally {
+        document.getElementById("spinBtn").disabled = false;
+      }
     }
   }, 80);
 }
 
+// スロット結果セット
 function setFinalSlots(outcome) {
   const result = document.getElementById("result");
 
@@ -151,7 +157,7 @@ function setFinalSlots(outcome) {
     for (let i = 1; i <= 3; i++) {
       document.getElementById(`slot${i}`).src = "seven.jpg";
     }
-    result.textContent = "大当たり！ +50";
+    result.textContent = "🎉 sevenで大当たり！ +50コイン";
     coins += 50;
     triggerWinEffect(true);
 
@@ -161,12 +167,12 @@ function setFinalSlots(outcome) {
     for (let i = 1; i <= 3; i++) {
       document.getElementById(`slot${i}`).src = chosen;
     }
-    result.textContent = "当たり！ +15";
+    result.textContent = "✨ 小当たり！ +15コイン";
     coins += 15;
     triggerWinEffect(false);
 
   } else {
-    // ハズレ（3つバラバラに）
+    // ハズレ（できるだけバラバラな図柄に）
     const used = [];
     for (let i = 1; i <= 3; i++) {
       let img;
@@ -176,7 +182,7 @@ function setFinalSlots(outcome) {
       used.push(img);
       document.getElementById(`slot${i}`).src = img;
     }
-    result.textContent = "はずれ… -3";
+    result.textContent = "😢 はずれ… -3コイン";
   }
 
   updateCoinsDisplay();
@@ -186,7 +192,23 @@ function setFinalSlots(outcome) {
   }
 }
 
+// 演出エフェクト
+function triggerWinEffect(isBig) {
+  const result = document.getElementById("result");
+  result.style.color = isBig ? "#e74c3c" : "#f1c40f";
+  result.style.fontSize = "1.4em";
+  result.style.fontWeight = "bold";
+  result.classList.add("flash");
+  setTimeout(() => {
+    result.style.color = "#333";
+    result.style.fontSize = "1em";
+    result.style.fontWeight = "normal";
+    result.classList.remove("flash");
+  }, 1200);
+}
 
-  </script>
+document.getElementById("spinBtn").addEventListener("click", spin);
+</script>
+
 </body>
 </html>
