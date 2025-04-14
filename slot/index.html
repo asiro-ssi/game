@@ -22,7 +22,7 @@
       cursor: pointer;
     }
     .result, .coins {
-      font-size: 24px;
+      font-size: 16px;
       margin-top: 20px;
     }
   </style>
@@ -84,7 +84,7 @@
         result.textContent = "🎉 大当たり！ +50コイン";
         coins += 50;
       } else if (slot1 === slot2 || slot2 === slot3 || slot1 === slot3) {
-        result.textContent = "✨ 小当たり！ +15コイン";
+        result.textContent = "✨ 小当たり！ +5コイン";
         coins += 15;
       } else {
         result.textContent = "😢 はずれ… -3コイン";
