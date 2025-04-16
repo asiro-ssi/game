@@ -1,182 +1,62 @@
-<!DOCTYPE html>
-<html lang="ja">
-<head>
-  <meta charset="UTF-8">
-  <title>パチスロ風スロット</title>
-  <style>
-    body {
-      font-family: sans-serif;
-      background: #222;
-      color: white;
-      text-align: center;
-      padding: 30px;
+function startSpin() {
+  if (spinning || coins < 3) return;
+
+  coins -= 3;
+  updateCoinDisplay();
+  document.getElementById("result").textContent = "回転中…";
+  stopped.fill(false);
+  spinning = true;
+
+  reels.forEach((reel, index) => {
+    createReelContent(reel);
+    positions[index] = 0;
+
+    intervals[index] = setInterval(() => {
+      positions[index] = (positions[index] + 1) % 30;
+      reel.style.transform = `translateY(${-positions[index] * 100}px)`;
+    }, 60);
+  });
+}
+
+function stopReel(index) {
+  if (!spinning || stopped[index]) return;
+  clearInterval(intervals[index]);
+  stopped[index] = true;
+
+  const pos = positions[index];
+  reels[index].style.transform = `translateY(${-pos * 100}px)`;
+
+  if (stopped.every(v => v)) {
+    spinning = false;
+    checkResult();
+  }
+}
+
+function checkResult() {
+  const results = positions.map(pos => symbols[pos % symbols.length]);
+  const resultText = document.getElementById("result");
+
+  if (results[0] === results[1] && results[1] === results[2]) {
+    if (results[0] === "seven.jpg") {
+      coins += 50;
+      resultText.textContent = "🎉 大当たり！+50コイン 🎉";
+    } else {
+      coins += 15;
+      resultText.textContent = "✨ 当たり！+15コイン ✨";
     }
+  } else {
+    resultText.textContent = "😢 ハズレ… -3コイン";
+  }
 
-    .slot-container {
-      display: flex;
-      justify-content: center;
-      gap: 20px;
-    }
+  updateCoinDisplay();
 
-    .reel-wrapper {
-      width: 100px;
-      height: 100px;
-      overflow: hidden;
-      border: 3px solid #fff;
-      border-radius: 10px;
-      background-color: #000;
-      position: relative;
-    }
+  if (coins < 3) {
+    resultText.textContent += "\nコインが足りません。リロードで再スタート。";
+    document.getElementById("spinBtn").disabled = true;
+  }
+}
 
-    .reel {
-      display: flex;
-      flex-direction: column;
-      animation-timing-function: linear;
-    }
-
-    .reel img {
-      width: 100%;
-      height: 100px;
-      object-fit: contain;
-    }
-
-    .stop-button {
-      margin-top: 10px;
-      padding: 5px 15px;
-      font-size: 16px;
-      border: none;
-      background-color: #e74c3c;
-      color: white;
-      border-radius: 6px;
-      cursor: pointer;
-    }
-
-    #spinBtn {
-      margin-top: 30px;
-      padding: 10px 30px;
-      font-size: 18px;
-      background-color: #3498db;
-      border: none;
-      color: white;
-      border-radius: 8px;
-      cursor: pointer;
-    }
-
-    #result {
-      margin-top: 20px;
-      font-size: 20px;
-      white-space: pre-line;
-    }
-  </style>
-</head>
-<body>
-  <h1>パチスロ風スロット</h1>
-  <div class="slot-container">
-    <div>
-      <div class="reel-wrapper">
-        <div class="reel" id="reel1"></div>
-      </div>
-      <button class="stop-button" onclick="stopReel(0)">STOP</button>
-    </div>
-    <div>
-      <div class="reel-wrapper">
-        <div class="reel" id="reel2"></div>
-      </div>
-      <button class="stop-button" onclick="stopReel(1)">STOP</button>
-    </div>
-    <div>
-      <div class="reel-wrapper">
-        <div class="reel" id="reel3"></div>
-      </div>
-      <button class="stop-button" onclick="stopReel(2)">STOP</button>
-    </div>
-  </div>
-
-  <button id="spinBtn" onclick="startSpin()">SPIN</button>
-  <div id="result">コイン: <span id="coinDisplay">50</span></div>
-
-  <script>
-    const symbols = ["001.png", "002.png", "003.png", "seven.jpg"];
-    const reels = [document.getElementById("reel1"), document.getElementById("reel2"), document.getElementById("reel3")];
-    const positions = [0, 0, 0];
-    const intervals = [null, null, null];
-    const stopped = [false, false, false];
-    let spinning = false;
-    let coins = 50;
-
-    function createReelContent(reel) {
-      reel.innerHTML = '';
-      for (let i = 0; i < 30; i++) {
-        const img = document.createElement("img");
-        img.src = symbols[i % symbols.length];
-        reel.appendChild(img);
-      }
-    }
-
-    function startSpin() {
-      if (spinning || coins < 3) return;
-      coins -= 3;
-      updateCoinDisplay();
-      document.getElementById("result").textContent = "回転中…";
-      stopped.fill(false);
-      spinning = true;
-
-      reels.forEach((reel, index) => {
-        createReelContent(reel);
-        positions[index] = 0;
-
-        intervals[index] = setInterval(() => {
-          positions[index] = (positions[index] + 1) % 30;
-          reel.style.transform = `translateY(${-positions[index] * 100}px)`;
-        }, 60);
-      });
-    }
-
-    function stopReel(index) {
-      if (!spinning || stopped[index]) return;
-      clearInterval(intervals[index]);
-      stopped[index] = true;
-
-      // ガチ目押し：止めた時点の表示が結果になる
-      const pos = positions[index];
-      reels[index].style.transform = `translateY(${-pos * 100}px)`;
-
-      if (stopped.every(v => v)) {
-        spinning = false;
-        checkResult();
-      }
-    }
-
-    function checkResult() {
-      const results = positions.map(pos => symbols[pos % symbols.length]);
-      const resultText = document.getElementById("result");
-
-      if (results[0] === results[1] && results[1] === results[2]) {
-        if (results[0] === "seven.jpg") {
-          coins += 50;
-          resultText.textContent = "🎉 大当たり！+50コイン 🎉";
-        } else {
-          coins += 15;
-          resultText.textContent = "✨ 当たり！+15コイン ✨";
-        }
-      } else {
-        resultText.textContent = "😢 ハズレ… -3コイン";
-      }
-
-      updateCoinDisplay();
-
-      if (coins < 3) {
-        resultText.textContent += "\nコインが足りません。リロードで再スタート。";
-        document.getElementById("spinBtn").disabled = true;
-      }
-    }
-
-    function updateCoinDisplay() {
-      document.getElementById("coinDisplay").textContent = coins;
-    }
-
-    // 初期描画
-    reels.forEach((reel) => createReelContent(reel));
-  </script>
-</body>
-</html>
+function updateCoinDisplay() {
+  document.getElementById("coinDisplay").textContent = coins;
+  document.getElementById("spinBtn").disabled = coins < 3 ? true : false;
+}
