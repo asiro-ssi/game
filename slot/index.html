@@ -2,200 +2,181 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
-  <title>slot game</title>
+  <title>パチスロ風スロット</title>
   <style>
     body {
-      font-family: 'Arial', sans-serif;
+      font-family: sans-serif;
+      background: #222;
+      color: white;
       text-align: center;
       padding: 30px;
-      background-color: #f7f7f7;
     }
 
-    .slot {
-      width: 80px;
-      height: 80px;
-      margin: 10px;
+    .slot-container {
+      display: flex;
+      justify-content: center;
+      gap: 20px;
+    }
+
+    .reel-wrapper {
+      width: 100px;
+      height: 100px;
+      overflow: hidden;
+      border: 3px solid #fff;
+      border-radius: 10px;
+      background-color: #000;
+      position: relative;
+    }
+
+    .reel {
+      display: flex;
+      flex-direction: column;
+      animation-timing-function: linear;
+    }
+
+    .reel img {
+      width: 100%;
+      height: 100px;
       object-fit: contain;
-      transition: transform 0.1s, opacity 0.1s;
     }
 
-    .spin-animation {
-      animation: spinFade 0.1s ease-in-out;
-    }
-
-    @keyframes spinFade {
-      0% { transform: scale(1.2); opacity: 0.2; }
-      100% { transform: scale(1); opacity: 1; }
-    }
-
-    .flash {
-      animation: flashGlow 0.6s ease-in-out;
-    }
-
-    @keyframes flashGlow {
-      0% { background-color: #fffacd; }
-      50% { background-color: #ffff99; }
-      100% { background-color: transparent; }
-    }
-
-    .shake {
-      animation: shake 0.5s;
-    }
-
-    @keyframes shake {
-      0%, 100% { transform: translate(0, 0); }
-      20% { transform: translate(-5px, 0); }
-      40% { transform: translate(5px, 0); }
-      60% { transform: translate(-5px, 0); }
-      80% { transform: translate(5px, 0); }
-    }
-
-    button {
-      margin: 20px;
-      padding: 10px 20px;
+    .stop-button {
+      margin-top: 10px;
+      padding: 5px 15px;
       font-size: 16px;
-      background-color: #3498db;
-      color: white;
       border: none;
+      background-color: #e74c3c;
+      color: white;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+
+    #spinBtn {
+      margin-top: 30px;
+      padding: 10px 30px;
+      font-size: 18px;
+      background-color: #3498db;
+      border: none;
+      color: white;
       border-radius: 8px;
       cursor: pointer;
     }
 
-    #coins {
-      font-size: 18px;
-      margin-bottom: 10px;
-    }
-
     #result {
-      font-size: 18px;
       margin-top: 20px;
+      font-size: 20px;
       white-space: pre-line;
     }
   </style>
 </head>
 <body>
-  <h1>slot</h1>
-  <div id="coins">coins：50</div>
-  <div>
-    <img class="slot" id="slot1" src="001.png" alt="slot1">
-    <img class="slot" id="slot2" src="002.png" alt="slot2">
-    <img class="slot" id="slot3" src="003.png" alt="slot3">
+  <h1>パチスロ風スロット</h1>
+  <div class="slot-container">
+    <div>
+      <div class="reel-wrapper">
+        <div class="reel" id="reel1"></div>
+      </div>
+      <button class="stop-button" onclick="stopReel(0)">STOP</button>
+    </div>
+    <div>
+      <div class="reel-wrapper">
+        <div class="reel" id="reel2"></div>
+      </div>
+      <button class="stop-button" onclick="stopReel(1)">STOP</button>
+    </div>
+    <div>
+      <div class="reel-wrapper">
+        <div class="reel" id="reel3"></div>
+      </div>
+      <button class="stop-button" onclick="stopReel(2)">STOP</button>
+    </div>
   </div>
-  <button id="spinBtn">spin</button>
-  <div id="result">start</div>
 
-<script>
-const symbols = [
-  "001.png",
-  "002.png",
-  "003.png",
-  "seven.jpg"
-];
+  <button id="spinBtn" onclick="startSpin()">SPIN</button>
+  <div id="result">コイン: <span id="coinDisplay">50</span></div>
 
-let coins = 50;
-document.getElementById("coins").textContent = `コイン: ${coins}`;
+  <script>
+    const symbols = ["001.png", "002.png", "003.png", "seven.jpg"];
+    const reels = [document.getElementById("reel1"), document.getElementById("reel2"), document.getElementById("reel3")];
+    const positions = [0, 0, 0];
+    const intervals = [null, null, null];
+    const stopped = [false, false, false];
+    let spinning = false;
+    let coins = 50;
 
-document.getElementById("spinBtn").addEventListener("click", spin);
-
-function updateCoinsDisplay() {
-  document.getElementById("coins").textContent = `コイン: ${coins}`;
-}
-
-function spin() {
-  if (coins < 3) {
-    document.getElementById("result").textContent = "コインが足りません";
-    return;
-  }
-
-  coins -= 3;
-  updateCoinsDisplay();
-  document.getElementById("result").textContent = "回転中…";
-  document.getElementById("spinBtn").disabled = true;
-
-  const rand = Math.random();
-  let outcome;
-
-  if (rand < 0.02) {
-    outcome = "big";
-  } else if (rand < 0.15) {
-    outcome = "small";
-  } else {
-    outcome = "miss";
-  }
-
-  let counter = 0;
-  const maxSpins = 10;
-  const interval = setInterval(() => {
-    for (let i = 1; i <= 3; i++) {
-      const slot = document.getElementById(`slot${i}`);
-      const randomImg = symbols[Math.floor(Math.random() * symbols.length)];
-      slot.src = randomImg;
-      slot.classList.add("spin-animation");
-      setTimeout(() => slot.classList.remove("spin-animation"), 100);
+    function createReelContent(reel) {
+      reel.innerHTML = '';
+      for (let i = 0; i < 30; i++) {
+        const img = document.createElement("img");
+        img.src = symbols[i % symbols.length];
+        reel.appendChild(img);
+      }
     }
-    counter++;
-    if (counter >= maxSpins) {
-      clearInterval(interval);
-      setFinalSlots(outcome);
-      document.getElementById("spinBtn").disabled = false;
+
+    function startSpin() {
+      if (spinning || coins < 3) return;
+      coins -= 3;
+      updateCoinDisplay();
+      document.getElementById("result").textContent = "回転中…";
+      stopped.fill(false);
+      spinning = true;
+
+      reels.forEach((reel, index) => {
+        createReelContent(reel);
+        positions[index] = 0;
+
+        intervals[index] = setInterval(() => {
+          positions[index] = (positions[index] + 1) % 30;
+          reel.style.transform = `translateY(${-positions[index] * 100}px)`;
+        }, 60);
+      });
     }
-  }, 80);
-}
 
-function setFinalSlots(outcome) {
-  const result = document.getElementById("result");
+    function stopReel(index) {
+      if (!spinning || stopped[index]) return;
+      clearInterval(intervals[index]);
+      stopped[index] = true;
 
-  if (outcome === "big") {
-    for (let i = 1; i <= 3; i++) {
-      document.getElementById(`slot${i}`).src = "seven.jpg";
+      // ガチ目押し：止めた時点の表示が結果になる
+      const pos = positions[index];
+      reels[index].style.transform = `translateY(${-pos * 100}px)`;
+
+      if (stopped.every(v => v)) {
+        spinning = false;
+        checkResult();
+      }
     }
-    result.textContent = "大当たり！ +50";
-    coins += 50;
-    triggerWinEffect(true);
 
-  } else if (outcome === "small") {
-    const nonSeven = symbols.filter(s => !s.includes("seven"));
-    const chosen = nonSeven[Math.floor(Math.random() * nonSeven.length)];
-    for (let i = 1; i <= 3; i++) {
-      document.getElementById(`slot${i}`).src = chosen;
+    function checkResult() {
+      const results = positions.map(pos => symbols[pos % symbols.length]);
+      const resultText = document.getElementById("result");
+
+      if (results[0] === results[1] && results[1] === results[2]) {
+        if (results[0] === "seven.jpg") {
+          coins += 50;
+          resultText.textContent = "🎉 大当たり！+50コイン 🎉";
+        } else {
+          coins += 15;
+          resultText.textContent = "✨ 当たり！+15コイン ✨";
+        }
+      } else {
+        resultText.textContent = "😢 ハズレ… -3コイン";
+      }
+
+      updateCoinDisplay();
+
+      if (coins < 3) {
+        resultText.textContent += "\nコインが足りません。リロードで再スタート。";
+        document.getElementById("spinBtn").disabled = true;
+      }
     }
-    result.textContent = "当たり！ +15";
-    coins += 15;
-    triggerWinEffect(false);
 
-  } else {
-    const used = [];
-    for (let i = 1; i <= 3; i++) {
-      let img;
-      do {
-        img = symbols[Math.floor(Math.random() * symbols.length)];
-      } while (used.includes(img) && used.length < symbols.length - 1);
-      used.push(img);
-      document.getElementById(`slot${i}`).src = img;
+    function updateCoinDisplay() {
+      document.getElementById("coinDisplay").textContent = coins;
     }
-    result.textContent = "はずれ… -3";
-  }
 
-  updateCoinsDisplay();
-
-  if (coins < 3) {
-    result.textContent += "\nコインが足りません";
-  }
-}
-
-function triggerWinEffect(isBig) {
-  const result = document.getElementById("result");
-  result.style.color = isBig ? "#000" : "#000";
-  result.style.fontSize = "1.0em";
-  result.style.fontWeight = "normal";
-  setTimeout(() => {
-    result.style.color = "#000";
-    result.style.fontSize = "1em";
-    result.style.fontWeight = "normal";
-  }, 1200);
-}
-</script>
-
-
+    // 初期描画
+    reels.forEach((reel) => createReelContent(reel));
+  </script>
 </body>
 </html>
