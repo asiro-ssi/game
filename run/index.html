@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Mini asiron Game</title>
   <style>
     html, body {
@@ -17,237 +17,245 @@
       margin: 0 auto;
       background: #f7f7f7;
     }
-
-    #startOverlay {
-      position: fixed;
-      top: 0; left: 0;
-      width: 100vw; height: 100vh;
-      background: rgba(255,255,255,0.95);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      flex-direction: column;
-      z-index: 10;
-    }
-
-    .dinoStartImage {
-      width: 80px;
-      height: auto;
-      margin-bottom: 20px;
-    }
-
-    @keyframes dinoRunAnim {
-      0% { transform: translateX(0); }
-      50% { transform: translateX(20px); }
-      100% { transform: translateX(0); }
-    }
-
-    .animatedDino {
-      animation: dinoRunAnim 1s infinite ease-in-out;
-    }
   </style>
 </head>
 <body>
-  <canvas id="gameCanvas" width="800" height="200" style="margin-top: 100px;"></canvas>
-  <div id="startOverlay">
-    <div class="messageBox">
-      <img src="dino_run1.png" alt="dino" class="dinoStartImage animatedDino">
-      <h1>Mini Asiron Game</h1>
-      <p>スペースキーまたは画面タップでスタート</p>
-    </div>
-  </div>
 
-  <!-- 画像読み込み -->
-  <img id="dinoRun1" src="dino_run1.png" style="display:none;">
-  <img id="dinoRun2" src="dino_run2.png" style="display:none;">
-  <img id="dinoRun3" src="dino_run3.png" style="display:none;">
-  <img id="dinoRun4" src="dino_run4.png" style="display:none;">
-  <img id="cactusImage" src="cactus.png" style="display:none;">
-  <img id="birdImage" src="bird.png" style="display:none;">
+<canvas id="gameCanvas" width="800" height="200" style="margin-top: 100px;"></canvas>
+<img id="dinoRun1" src="dino_run1.png" style="display:none;">
+<img id="dinoRun2" src="dino_run2.png" style="display:none;">
+<img id="dinoRun3" src="dino_run3.png" style="display:none;">
+<img id="dinoRun4" src="dino_run4.png" style="display:none;">
+<img id="cactusImage" src="cactus.png" style="display:none;">
+<img id="birdImage" src="bird.png" style="display:none;">
+<img id="starImage" src="star.png" style="display:none;">
 
-  <p style="text-align: center;">start ： スペースキー</p>
-  <p style="text-align: center;">jump  ： スペースキー</p>
-  <p style="text-align: center;">本家→ chrome://dino（アドレスバーに入力）</p>
+<p style="text-align: center;">start / jump ： スペースキー or タップ</p>
 
-  <script>
-    const canvas = document.getElementById("gameCanvas");
-    const ctx = canvas.getContext("2d");
-    const dinoImages = [
-      document.getElementById("dinoRun1"),
-      document.getElementById("dinoRun2"),
-      document.getElementById("dinoRun3"),
-      document.getElementById("dinoRun4")
-    ];
-    const cactusImg = document.getElementById("cactusImage");
-    const birdImg = document.getElementById("birdImage");
+<script>
+const canvas = document.getElementById("gameCanvas");
+const ctx = canvas.getContext("2d");
 
-    const startOverlay = document.getElementById("startOverlay");
+const dinoRun1 = document.getElementById("dinoRun1");
+const dinoRun2 = document.getElementById("dinoRun2");
+const dinoRun3 = document.getElementById("dinoRun3");
+const dinoRun4 = document.getElementById("dinoRun4");
+const cactusImg = document.getElementById("cactusImage");
+const birdImg = document.getElementById("birdImage");
+const starImg = document.getElementById("starImage");
 
-    let bgX = 0;
-    let canRestart = true;
+let bgX = 0;
 
-    let dino = {
-      x: 50,
-      y: 150,
-      width: 48,
-      height: 48,
-      vy: 0,
-      gravity: 2,
-      jumpPower: -25,
-      isJumping: false,
-      frame: 0,
-      frameCount: 0
-    };
+let dino = {
+  x: 50,
+  y: 150,
+  width: 48,
+  height: 48,
+  vy: 0,
+  gravity: 2,
+  jumpPower: -25,
+  isJumping: false,
+  frame: 0,
+  frameCount: 0
+};
 
-    let cactus = { x: 800, y: 160, width: 20, height: 40 };
-    let bird = { x: 1200, y: 100, width: 40, height: 30 };
-    let score = 0;
-    let gameOver = false;
-    let gameStarted = false;
-    let speed = 8;
-    let cactusCooldown = 0;
+let cactus = { x: 800, y: 160, width: 20, height: 40 };
+let bird = { x: 1200, y: 100, width: 40, height: 30 };
+let star = { x: 1000, y: 80, width: 24, height: 24, active: false, cooldown: 0 };
 
-    document.addEventListener("keydown", (e) => {
-      if (e.code === "Space") handleJump();
-    });
+let score = 0;
+let gameOver = false;
+let gameStarted = false;
+let speed = 8;
+let cactusCooldown = 0;
+let restartLocked = false;
 
-    canvas.addEventListener("touchstart", handleJump);
+document.addEventListener("keydown", (e) => {
+  if (e.code === "Space") handleJump();
+});
+canvas.addEventListener("touchstart", handleJump);
 
-    function handleJump() {
-      if (!gameStarted) {
-        startOverlay.style.display = "none";
-        resetGame();
-        loop();
-      } else if (gameOver && canRestart) {
-        resetGame();
-        loop();
-      } else if (!dino.isJumping && !gameOver) {
-        dino.vy = dino.jumpPower;
-        dino.isJumping = true;
-      }
+function handleJump() {
+  if (!gameStarted) {
+    resetGame();
+    loop();
+  } else if (gameOver && !restartLocked) {
+    resetGame();
+    loop();
+  } else if (!dino.isJumping && !gameOver) {
+    dino.vy = dino.jumpPower;
+    dino.isJumping = true;
+  }
+}
+
+function resetGame() {
+  gameOver = false;
+  restartLocked = true;
+  setTimeout(() => restartLocked = false, 2000);
+  cactus.x = 800;
+  bird.x = 1200;
+  star.active = false;
+  star.cooldown = Math.random() * 300 + 200;
+  score = 0;
+  speed = 8;
+  dino.y = 150;
+  dino.vy = 0;
+  dino.isJumping = false;
+  dino.frame = 0;
+  dino.frameCount = 0;
+  cactusCooldown = Math.random() * 150 + 100;
+  gameStarted = true;
+}
+
+function update() {
+  // 背景スクロール
+  bgX -= speed / 2;
+  if (bgX <= -canvas.width) bgX = 0;
+
+  // ジャンプ
+  dino.y += dino.vy;
+  dino.vy += dino.gravity;
+  if (dino.y >= 150) {
+    dino.y = 150;
+    dino.vy = 0;
+    dino.isJumping = false;
+  }
+
+  // アニメーション
+  if (!dino.isJumping) {
+    dino.frameCount++;
+    if (dino.frameCount % 2 === 0) {
+      dino.frame = (dino.frame + 1) % 4;
+    }
+  }
+
+  // サボテン
+  cactus.x -= speed;
+  cactusCooldown -= speed;
+  if (cactus.x < -cactus.width && cactusCooldown <= 0) {
+    cactus.x = 800 + Math.random() * 200;
+    cactusCooldown = Math.random() * 150 + 100;
+  }
+
+  // 鳥
+  bird.x -= speed + 1;
+  if (bird.x < -bird.width) {
+    bird.x = 1000 + Math.random() * 300;
+    bird.y = 80 + Math.random() * 60;
+  }
+
+  // ★スター
+  if (!star.active) {
+    star.cooldown -= speed;
+    if (star.cooldown <= 0) {
+      star.active = true;
+      star.x = 850 + Math.random() * 300;
+      star.y = 60 + Math.random() * 80;
+    }
+  } else {
+    star.x -= speed;
+    if (star.x < -star.width) {
+      star.active = false;
+      star.cooldown = Math.random() * 400 + 200;
     }
 
-    function resetGame() {
-      gameOver = false;
-      canRestart = false;
-      setTimeout(() => canRestart = true, 2000);
-
-      cactus.x = 800;
-      bird.x = 1200;
-      score = 0;
-      speed = 8;
-      dino.y = 150;
-      dino.vy = 0;
-      dino.isJumping = false;
-      dino.frame = 0;
-      dino.frameCount = 0;
-      cactusCooldown = Math.random() * 150 + 100;
-      gameStarted = true;
+    // スター当たり判定
+    if (
+      dino.x < star.x + star.width &&
+      dino.x + dino.width > star.x &&
+      dino.y < star.y + star.height &&
+      dino.y + dino.height > star.y
+    ) {
+      score += Math.floor(speed * 10);
+      star.active = false;
+      star.cooldown = Math.random() * 400 + 200;
     }
+  }
 
-    function update() {
-      bgX -= speed / 2;
-      if (bgX <= -canvas.width) bgX = 0;
+  // 当たり判定（サボテン・鳥）
+  if (
+    (dino.x < cactus.x + cactus.width &&
+     dino.x + dino.width > cactus.x &&
+     dino.y < cactus.y + cactus.height &&
+     dino.y + dino.height > cactus.y)
+    ||
+    (dino.x < bird.x + bird.width &&
+     dino.x + dino.width > bird.x &&
+     dino.y < bird.y + bird.height &&
+     dino.y + dino.height > bird.y)
+  ) {
+    gameOver = true;
+  }
 
-      dino.y += dino.vy;
-      dino.vy += dino.gravity;
-      if (dino.y >= 150) {
-        dino.y = 150;
-        dino.vy = 0;
-        dino.isJumping = false;
-      }
+  // スコア & スピード
+  score++;
+  if (score % 100 === 0) speed += 0.5;
+}
 
-      if (!dino.isJumping) {
-        dino.frameCount++;
-        if (dino.frameCount % 2 === 0) {
-          dino.frame = (dino.frame + 1) % 4;
-        }
-      }
+function draw() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-      cactus.x -= speed;
-      cactusCooldown -= speed;
-      if (cactus.x < -cactus.width && cactusCooldown <= 0) {
-        cactus.x = 800 + Math.random() * 200;
-        cactusCooldown = Math.random() * 150 + 100;
-      }
+  // 背景
+  ctx.fillStyle = "#f7f7f7";
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-      bird.x -= speed + 1;
-      if (bird.x < -bird.width) {
-        bird.x = 1000 + Math.random() * 300;
-        bird.y = 80 + Math.random() * 60;
-      }
+  // 地面
+  ctx.strokeStyle = "#888";
+  ctx.beginPath();
+  ctx.moveTo(0, 190);
+  ctx.lineTo(800, 190);
+  ctx.stroke();
 
-      if (
-        dino.x < cactus.x + cactus.width &&
-        dino.x + dino.width > cactus.x &&
-        dino.y < cactus.y + cactus.height &&
-        dino.y + dino.height > cactus.y
-      ) {
-        gameOver = true;
-      }
+  // 恐竜
+  const dinoImages = [dinoRun1, dinoRun2, dinoRun3, dinoRun4];
+  ctx.drawImage(dinoImages[dino.frame], dino.x, dino.y, dino.width, dino.height);
 
-      if (
-        dino.x < bird.x + bird.width &&
-        dino.x + dino.width > bird.x &&
-        dino.y < bird.y + bird.height &&
-        dino.y + dino.height > bird.y
-      ) {
-        gameOver = true;
-      }
+  // 障害物・敵
+  ctx.drawImage(cactusImg, cactus.x, cactus.y, cactus.width, cactus.height);
+  ctx.drawImage(birdImg, bird.x, bird.y, bird.width, bird.height);
 
-      score++;
-      if (score % 100 === 0) speed += 0.5;
-    }
+  // ★スター
+  if (star.active) {
+    ctx.drawImage(starImg, star.x, star.y, star.width, star.height);
+  }
 
-    function draw() {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      ctx.fillStyle = "#f7f7f7";
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
+  // スコア表示
+  ctx.fillStyle = "black";
+  ctx.font = "20px sans-serif";
+  ctx.fillText("Score: " + score, 650, 30);
 
-      ctx.strokeStyle = "#888";
-      ctx.beginPath();
-      ctx.moveTo(0, 190);
-      ctx.lineTo(800, 190);
-      ctx.stroke();
+  // スタートメッセージ
+  if (!gameStarted) {
+    ctx.font = "28px sans-serif";
+    ctx.fillText("スペースキーでスタート", 260, 100);
+  }
 
-      ctx.drawImage(dinoImages[dino.frame], dino.x, dino.y, dino.width, dino.height);
-      ctx.drawImage(cactusImg, cactus.x, cactus.y, cactus.width, cactus.height);
-      ctx.drawImage(birdImg, bird.x, bird.y, bird.width, bird.height);
+  if (gameOver) {
+    ctx.font = "14px sans-serif";
+    ctx.fillText("Game Over / スペースで再開", 220, 120);
+  }
+}
 
-      ctx.fillStyle = "black";
-      ctx.font = "20px sans-serif";
-      ctx.fillText("Score: " + score, 650, 30);
+function loop() {
+  if (!gameOver && gameStarted) {
+    update();
+    draw();
+    requestAnimationFrame(loop);
+  } else {
+    draw();
+  }
+}
 
-      if (!gameStarted) {
-        ctx.font = "28px sans-serif";
-        ctx.fillText("スペースキーでスタート", 260, 100);
-      }
+// リサイズ対応
+function resizeCanvas() {
+  const ratio = 800 / 200;
+  const w = canvas.clientWidth;
+  const h = w / ratio;
+  canvas.style.height = h + "px";
+}
+window.addEventListener("resize", resizeCanvas);
+resizeCanvas();
+</script>
 
-      if (gameOver) {
-        ctx.font = "14px sans-serif";
-        ctx.fillText("Game Over / スペースで再開", 220, 120);
-      }
-    }
-
-    function loop() {
-      if (!gameOver && gameStarted) {
-        update();
-        draw();
-        requestAnimationFrame(loop);
-      } else {
-        draw();
-      }
-    }
-
-    function resizeCanvas() {
-      const ratio = 800 / 200;
-      const w = canvas.clientWidth;
-      const h = w / ratio;
-      canvas.style.height = h + "px";
-    }
-
-    window.addEventListener("resize", resizeCanvas);
-    resizeCanvas();
-  </script>
 </body>
 </html>
