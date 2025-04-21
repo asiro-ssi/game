@@ -11,7 +11,6 @@
       overflow: hidden;
       background: #f7f7f7;
     }
-
     #gameCanvas {
       display: block;
       margin: 0 auto;
@@ -29,9 +28,7 @@
   <img id="birdImage" src="bird.png" style="display:none;">
   <img id="starImage" src="star.png" style="display:none;">
 
-  <p style="text-align: center;">
-    スタート：Enterキー<br>
-    ジャンプ：スペースキー or タップ</p>
+  <p style="text-align: center;">スタート：Enterキー / ジャンプ：スペースキー or タップ</p>
 
   <script>
     const canvas = document.getElementById("gameCanvas");
@@ -68,36 +65,41 @@
     let gameOver = false;
     let restartLock = false;
 
-document.addEventListener("keydown", (e) => {
-  if (e.code === "Space") {
-    // ジャンプのみ
-    if (gameStarted && !gameOver && !dino.isJumping) {
-      dino.vy = dino.jumpPower;
-      dino.isJumping = true;
-    }
-  } else if (e.code === "Enter") {
-    // スタート・リスタートのみ
-    if (!gameStarted || (gameOver && !restartLock)) {
-      resetGame();
-      loop();
-    }
-  }
-});
+    // 画像読み込み待ち → スタート画面描画
+    const imagesToLoad = [dinoRun1, dinoRun2, dinoRun3, dinoRun4, cactusImg, birdImg, starImg];
+    let loadedCount = 0;
 
-    canvas.addEventListener("touchstart", handleJump);
+    imagesToLoad.forEach(img => {
+      img.onload = () => {
+        loadedCount++;
+        if (loadedCount === imagesToLoad.length) {
+          draw(); // 全部読み込んだら初期画面描画
+        }
+      };
+    });
 
-    function handleJump() {
-      if (!gameStarted) {
-        resetGame();
-        loop();
-      } else if (gameOver && !restartLock) {
-        resetGame();
-        loop();
-      } else if (!dino.isJumping) {
+    document.addEventListener("keydown", (e) => {
+      if (e.code === "Space") {
+        // ジャンプのみ
+        if (gameStarted && !gameOver && !dino.isJumping) {
+          dino.vy = dino.jumpPower;
+          dino.isJumping = true;
+        }
+      } else if (e.code === "Enter" || e.code === "NumpadEnter") {
+        // スタート・リスタート
+        if (!gameStarted || (gameOver && !restartLock)) {
+          resetGame();
+          loop();
+        }
+      }
+    });
+
+    canvas.addEventListener("touchstart", () => {
+      if (gameStarted && !gameOver && !dino.isJumping) {
         dino.vy = dino.jumpPower;
         dino.isJumping = true;
       }
-    }
+    });
 
     function resetGame() {
       gameOver = false;
@@ -128,7 +130,7 @@ document.addEventListener("keydown", (e) => {
       bgX -= speed / 2;
       if (bgX <= -canvas.width) bgX = 0;
 
-      // ジャンプ
+      // ジャンプ処理
       dino.y += dino.vy;
       dino.vy += dino.gravity;
       if (dino.y >= 150) {
@@ -137,7 +139,7 @@ document.addEventListener("keydown", (e) => {
         dino.isJumping = false;
       }
 
-      // 恐竜アニメーション
+      // アニメーション
       if (!dino.isJumping) {
         dino.frameCount++;
         if (dino.frameCount % 2 === 0) {
@@ -160,7 +162,7 @@ document.addEventListener("keydown", (e) => {
         bird.y = 80 + Math.random() * 60;
       }
 
-      // スター出現
+      // スター
       if (!star.active && star.cooldown <= 0) {
         star.active = true;
         star.x = 800 + Math.random() * 400;
@@ -177,7 +179,7 @@ document.addEventListener("keydown", (e) => {
         }
       }
 
-      // サボテン衝突
+      // 衝突判定
       if (
         dino.x < cactus.x + cactus.width &&
         dino.x + dino.width > cactus.x &&
@@ -187,7 +189,6 @@ document.addEventListener("keydown", (e) => {
         gameOver = true;
       }
 
-      // 鳥衝突
       if (
         dino.x < bird.x + bird.width &&
         dino.x + dino.width > bird.x &&
@@ -212,13 +213,11 @@ document.addEventListener("keydown", (e) => {
         star.cooldown = Math.random() * 400 + 200;
       }
 
-      // スコアアップ
       score++;
       if (score % 100 === 0) {
         speed += 0.5;
       }
 
-      // ポップアップ更新
       plusScores.forEach(p => {
         p.y--;
         p.alpha -= 0.02;
@@ -228,7 +227,6 @@ document.addEventListener("keydown", (e) => {
 
     function draw() {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
-
       ctx.fillStyle = "#f7f7f7";
       ctx.fillRect(0, 0, canvas.width, canvas.height);
 
@@ -250,7 +248,6 @@ document.addEventListener("keydown", (e) => {
         ctx.drawImage(starImg, star.x, star.y, star.width, star.height);
       }
 
-      // ポップアップ
       plusScores.forEach(p => {
         ctx.fillStyle = `rgba(55,55,55,${p.alpha})`;
         ctx.font = "16px sans-serif";
@@ -269,7 +266,7 @@ document.addEventListener("keydown", (e) => {
 
       if (gameOver) {
         ctx.font = "14px sans-serif";
-        ctx.fillText("Game Over / Enterキーで再開", 220, 120);
+        ctx.fillText("Game Over / Enterで再開", 220, 120);
       }
     }
 
