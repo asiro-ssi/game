@@ -263,13 +263,13 @@ document.addEventListener("keydown", (e) => {
 
       if (!gameStarted) {
         ctx.font = "28px sans-serif";
-        ctx.fillText("スペースキーでスタート", 260, 100);
+        ctx.fillText("Enterキーでスタート", 260, 100);
         ctx.drawImage(dinoRun1, canvas.width / 2 - 24, 120, 48, 48);
       }
 
       if (gameOver) {
         ctx.font = "14px sans-serif";
-        ctx.fillText("Game Over / スペースで再開", 220, 120);
+        ctx.fillText("Game Over / Enterキーで再開", 220, 120);
       }
     }
 
