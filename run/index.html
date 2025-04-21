@@ -29,7 +29,9 @@
   <img id="birdImage" src="bird.png" style="display:none;">
   <img id="starImage" src="star.png" style="display:none;">
 
-  <p style="text-align: center;">start / jump：スペースキー or タップ</p>
+  <p style="text-align: center;">
+    スタート：Enterキー<br>
+    ジャンプ：スペースキー or タップ</p>
 
   <script>
     const canvas = document.getElementById("gameCanvas");
@@ -66,9 +68,21 @@
     let gameOver = false;
     let restartLock = false;
 
-    document.addEventListener("keydown", (e) => {
-      if (e.code === "Space") handleJump();
-    });
+document.addEventListener("keydown", (e) => {
+  if (e.code === "Space") {
+    // ジャンプのみ
+    if (gameStarted && !gameOver && !dino.isJumping) {
+      dino.vy = dino.jumpPower;
+      dino.isJumping = true;
+    }
+  } else if (e.code === "Enter") {
+    // スタート・リスタートのみ
+    if (!gameStarted || (gameOver && !restartLock)) {
+      resetGame();
+      loop();
+    }
+  }
+});
 
     canvas.addEventListener("touchstart", handleJump);
 
